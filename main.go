@@ -24,6 +24,8 @@ var (
 	totalTs       int64
 	minTs         int64
 	maxTs         int64
+
+	totalBalan []int64
 )
 
 type ICMP struct {
@@ -57,7 +59,7 @@ func checkSum(data []byte) uint16 {
 func getCommandArgs() {
 	flag.Int64Var(&timeOut, "w", 1000, "timeout，请求超时时常,ms.")
 	flag.IntVar(&size, "l", 32, "请求发送缓冲区大小，字节")
-	flag.IntVar(&count, "n", 4, "发送请求数.")
+	flag.IntVar(&count, "n", 6, "发送请求数.")
 	flag.Parse()
 }
 
@@ -122,21 +124,33 @@ func main() {
 		ts := time.Since(t1).Milliseconds()
 		sueccessCount++
 		totalTs += ts
-		if minTs > ts {
-			minTs = ts
-		}
-		if maxTs < ts {
-			maxTs = ts
-		}
+		totalBalan = append(totalBalan, ts)
+		// if minTs > ts {
+		// 	minTs = ts
+		// }
+		// if maxTs < ts {
+		// 	maxTs = ts
+		// }
+
 		fmt.Printf("%d bytes from %d.%d.%d.%d: size=%d icmp_seq=%d ttl=%d time=%d ms\n", n-28, buf[12], buf[13],
 			buf[14], buf[15], n-28, i+1, buf[8], ts,
 		)
 		time.Sleep(time.Second)
 	}
+
+	maxTs = totalBalan[0]
+	minTs = totalBalan[0]
+	for i := 0; i < len(totalBalan); i++ {
+		if totalBalan[i] > maxTs {
+			maxTs = totalBalan[i]
+		} else if totalBalan[i] < minTs {
+			minTs = totalBalan[i]
+		}
+	}
+
 	fmt.Printf("--- %s ping statistics --- \n"+
 		"%d packets transmitted, %d received, %.2f%%(%d) packet loss, time %d ms \n"+
 		"rtt min/avg/max/mdev = %d/%d/%d/%d ms\n", conn.RemoteAddr(), sendCount, sueccessCount,
 		float64(failCount)/float64(sendCount), failCount, totalTs, minTs, totalTs/int64(sendCount), maxTs, 0,
 	)
 }
-
