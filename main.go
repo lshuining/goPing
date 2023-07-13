@@ -88,8 +88,8 @@ func main() {
 			Type:        typ,
 			Code:        code,
 			CheckSum:    0,
-			ID:          1,
-			SequenceNum: 1,
+			ID:          uint16(i),
+			SequenceNum: uint16(i),
 		}
 
 		data := make([]byte, size)
